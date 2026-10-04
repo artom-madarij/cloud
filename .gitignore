@@ -1,0 +1,14 @@
+lab1/.env
+*.env
+lab1/terraform/terraform.tfvars
+lab1/AWSCLIV2.pkg
+
+lab1/terraform/.terraform/
+lab1/terraform/*.tfstate
+lab1/terraform/*.tfstate.*
+lab1/terraform/*.tfplan
+
+**/node_modules/
+lab1/lab11/build/
+
+.DS_Store
