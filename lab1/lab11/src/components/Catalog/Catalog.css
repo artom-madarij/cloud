@@ -1,0 +1,149 @@
+.catalog {
+  padding: 40px 0;
+  background-color: #f8f9fa;
+  min-height: 80vh;
+}
+
+.catalog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.catalog-title {
+  font-size: 2.2rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.catalog-controls {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.catalog-content {
+  display: flex;
+  gap: 30px;
+}
+
+.catalog-filters {
+  flex: 0 0 280px;
+}
+
+.filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.filter-section h3 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reset-filters {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: 2px solid #e74c3c;
+  color: #e74c3c;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.reset-filters:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.catalog-products {
+  flex: 1;
+}
+
+.products-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.products-info p {
+  color: #2c3e50;
+  font-weight: 500;
+  margin: 0;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.no-products {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.no-products button {
+  margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .catalog-content {
+    flex-direction: column;
+  }
+  
+  .catalog-filters {
+    flex: none;
+    width: 100%;
+  }
+  
+  .catalog-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .catalog-controls {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalog {
+    padding: 20px 0;
+  }
+  
+  .catalog-title {
+    font-size: 1.8rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .catalog-controls {
+    gap: 15px;
+  }
+}

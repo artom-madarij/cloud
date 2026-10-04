@@ -1,0 +1,39 @@
+@import './style/globals.css';
+
+@import './components/Header/Header.css';
+@import './components/Hero/Hero.css';
+@import './components/ProductGrid/ProductGrid.css';
+@import './components/ProductTile/ProductTile.css';
+@import './components/Footer/Footer.css';
+@import './components/Catalog/Catalog.css';
+@import './components/SearchBox/SearchBox.css';
+@import './components/PrimaryButton/PrimaryButton.css';
+@import './components/CatalogProductTile/CatalogProductTile.css';
+@import './components/Select/Select.css';
+@import './components/Item/Item.css';
+@import './components/Loader/Loader.css'; 
+@import './components/Cart/Cart.css'; 
+@import './components/FormError/FormError.css'; 
+@import './pages/CheckoutPage.css';
+
+.error-message {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.error-message p {
+  color: #e74c3c;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.products-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}

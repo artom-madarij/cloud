@@ -1,0 +1,43 @@
+.select-container {
+  margin-bottom: 15px;
+}
+
+.select-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.select:hover {
+  border-color: #bdc3c7;
+}
+
+@media (max-width: 480px) {
+  .select {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+}

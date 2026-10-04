@@ -1,0 +1,11 @@
+.git
+.gitignore
+
+lab11/node_modules
+lab11/build
+
+backend_lab11/node_modules
+
+.env
+.env.*
+terraform.tfvars

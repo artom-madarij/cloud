@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lamp-store-app
+    ports:
+      - "5002:5002"
+    environment:
+      PORT: 5002
+      DB_HOST: db
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0.39
+    container_name: lamp-store-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend_lab11/database_setup.sql:/docker-entrypoint-initdb.d/01_database_setup.sql:ro
+      - ./backend_lab11/database_update.sql:/docker-entrypoint-initdb.d/02_database_update.sql:ro
+      - ./backend_lab11/database_update_with_temperature.sql:/docker-entrypoint-initdb.d/03_database_update_with_temperature.sql:ro
+      - ./backend_lab11/database_orders_table.sql:/docker-entrypoint-initdb.d/04_database_orders_table.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ulamp_user", "-plamp_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
