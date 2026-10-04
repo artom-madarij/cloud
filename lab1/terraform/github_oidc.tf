@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "github_actions_assume" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:artom-madarij/Web:ref:refs/heads/main"
+        "repo:artom-madarij/cloud:ref:refs/heads/main"
       ]
     }
   }
