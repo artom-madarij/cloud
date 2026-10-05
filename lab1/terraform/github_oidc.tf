@@ -25,12 +25,12 @@ data "aws_iam_policy_document" "github_actions_assume" {
     }
 
     condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
+        test     = "StringEquals"
+        variable = "token.actions.githubusercontent.com:sub"
 
-      values = [
-        "sts.amazonaws.com"
-      ]
+        values = [
+            "repo:artom-madarij@180961129/cloud@1404734446:ref:refs/heads/main"
+        ]
     }
 
     condition {
