@@ -49,7 +49,6 @@ jobs:
           IMAGE="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
           docker buildx build \
-            --platform linux/arm64 \
             --file lab1/Dockerfile \
             --tag "$IMAGE" \
             --push \
