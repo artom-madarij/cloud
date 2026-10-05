@@ -25,12 +25,12 @@ data "aws_iam_policy_document" "github_actions_assume" {
     }
 
     condition {
-        test     = "StringEquals"
-        variable = "token.actions.githubusercontent.com:sub"
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
 
-        values = [
-            "repo:artom-madarij@180961129/cloud@1404734446:ref:refs/heads/main"
-        ]
+      values = [
+        "sts.amazonaws.com"
+      ]
     }
 
     condition {
@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "github_actions_assume" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:artom-madarij/cloud:ref:refs/heads/main"
+        "repo:artom-madarij@180961129/cloud@1404734446:ref:refs/heads/main"
       ]
     }
   }
