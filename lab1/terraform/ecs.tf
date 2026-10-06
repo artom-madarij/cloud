@@ -35,6 +35,10 @@ resource "aws_ecs_task_definition" "app" {
       image     = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
       essential = true
 
+      mountPoints    = []
+      systemControls = []
+      volumesFrom    = []
+
       portMappings = [
         {
           containerPort = 5002
@@ -99,7 +103,7 @@ resource "aws_ecs_service" "app" {
 
   launch_type = "FARGATE"
 
-  platform_version = "LATEST"
+  platform_version = "1.4.0"
 
   desired_count = 1
 
