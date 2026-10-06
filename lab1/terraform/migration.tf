@@ -14,7 +14,7 @@ resource "aws_ecr_repository" "migrations" {
   }
 }
 
-# ECS migration task
+# ECS migration task (запускається один раз з bootstrap.tf)
 
 resource "aws_ecs_task_definition" "migration" {
   family = "${var.project_name}-migration"
@@ -41,28 +41,10 @@ resource "aws_ecs_task_definition" "migration" {
       image     = "${aws_ecr_repository.migrations.repository_url}:migration"
       essential = true
 
-      entryPoint = [
-        "sh",
-        "-c"
-      ]
-
-      command = [
-        "set -eu; echo 'Running database_setup.sql'; MYSQL_PWD=\"$DB_PASSWORD\" mysql --protocol=TCP -h \"$DB_HOST\" -P \"$DB_PORT\" -u \"$DB_USER\" \"$DB_NAME\" < /migrations/01_database_setup.sql; echo 'Running database_update.sql'; MYSQL_PWD=\"$DB_PASSWORD\" mysql --protocol=TCP -h \"$DB_HOST\" -P \"$DB_PORT\" -u \"$DB_USER\" \"$DB_NAME\" < /migrations/02_database_update.sql; echo 'Running database_update_with_temperature.sql'; MYSQL_PWD=\"$DB_PASSWORD\" mysql --protocol=TCP -h \"$DB_HOST\" -P \"$DB_PORT\" -u \"$DB_USER\" \"$DB_NAME\" < /migrations/03_database_update_with_temperature.sql; echo 'Running database_orders_table.sql'; MYSQL_PWD=\"$DB_PASSWORD\" mysql --protocol=TCP -h \"$DB_HOST\" -P \"$DB_PORT\" -u \"$DB_USER\" \"$DB_NAME\" < /migrations/04_database_orders_table.sql; echo 'Database migration completed successfully.'"
-      ]
-
       environment = [
-        {
-          name  = "DB_HOST"
-          value = aws_db_instance.mysql.address
-        },
-        {
-          name  = "DB_PORT"
-          value = "3306"
-        },
-        {
-          name  = "DB_NAME"
-          value = "lamp_store"
-        }
+        { name = "DB_HOST", value = aws_db_instance.mysql.address },
+        { name = "DB_PORT", value = "3306" },
+        { name = "DB_NAME", value = "lamp_store" }
       ]
 
       secrets = [

@@ -48,29 +48,18 @@ resource "aws_ecs_task_definition" "app" {
       ]
 
       environment = [
-        {
-          name  = "PORT"
-          value = "5002"
-        },
-        {
-          name  = "DB_HOST"
-          value = aws_db_instance.mysql.address
-        },
-        {
-          name  = "DB_NAME"
-          value = "lamp_store"
-        }
+        { name = "PORT", value = "5002" },
+        { name = "DB_HOST", value = aws_db_instance.mysql.address },
+        { name = "DB_NAME", value = "lamp_store" }
       ]
 
       secrets = [
         {
-          name = "DB_USER"
-
+          name      = "DB_USER"
           valueFrom = "${aws_db_instance.mysql.master_user_secret[0].secret_arn}:username::"
         },
         {
-          name = "DB_PASSWORD"
-
+          name      = "DB_PASSWORD"
           valueFrom = "${aws_db_instance.mysql.master_user_secret[0].secret_arn}:password::"
         }
       ]
@@ -135,7 +124,9 @@ resource "aws_ecs_service" "app" {
   }
 
   depends_on = [
-    aws_lb_listener.http
+    aws_lb_listener.http,
+    terraform_data.bootstrap_images,
+    terraform_data.run_migration,
   ]
 
   tags = {
