@@ -3,8 +3,15 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger');
+
 const app = express();
 const PORT = process.env.PORT || 5002;
+
+app.use('/swagger', swaggerUi.serve);
+app.get('/swagger', swaggerUi.setup(swaggerDocument));
+app.get('/swagger/', swaggerUi.setup(swaggerDocument));
 
 app.use(cors());
 app.use(express.json());
