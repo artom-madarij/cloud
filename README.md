@@ -7,7 +7,7 @@
 `Internet` → `Application Load Balancer` → `ECS Fargate` → `Amazon RDS (MySQL)`
 
 ## Публічна адреса
-`http://lamp-store-alb-933047657.eu-central-1.elb.amazonaws.com`
+`http://lamp-store-alb-150574506.eu-central-1.elb.amazonaws.com`
 
 ## Використані технології
 - **AWS:** ECS Fargate (ARM64), ECR, RDS MySQL, ALB

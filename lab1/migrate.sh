@@ -1,27 +1,52 @@
 #!/bin/bash
+
 set -eu
 
 export MYSQL_PWD="$DB_PASSWORD"
 
-run() {
-  mysql --protocol=TCP -h "$DB_HOST" -P "${DB_PORT:-3306}" -u "$DB_USER" "$@"
+DB_PORT="${DB_PORT:-3306}"
+
+mysql_cmd() {
+  mysql \
+    --protocol=TCP \
+    -h "$DB_HOST" \
+    -P "$DB_PORT" \
+    -u "$DB_USER" \
+    "$@"
 }
 
-run "$DB_NAME" -e "CREATE TABLE IF NOT EXISTS schema_migrations (
-  filename VARCHAR(255) PRIMARY KEY,
-  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)"
+echo "Checking whether database is already initialized..."
 
-for f in /migrations/*.sql; do
-  name=$(basename "$f")
-  applied=$(run -N -B "$DB_NAME" -e "SELECT COUNT(*) FROM schema_migrations WHERE filename='$name'")
-  if [ "$applied" = "0" ]; then
-    echo "Applying $name"
-    run "$DB_NAME" < "$f"
-    run "$DB_NAME" -e "INSERT INTO schema_migrations (filename) VALUES ('$name')"
-  else
-    echo "Skipping $name (already applied)"
-  fi
-done
+PRODUCTS_EXISTS=$(
+  mysql_cmd \
+    -N \
+    -B \
+    "$DB_NAME" \
+    -e "
+      SELECT COUNT(*)
+      FROM information_schema.tables
+      WHERE table_schema = '$DB_NAME'
+        AND table_name = 'products';
+    "
+)
+
+if [ "$PRODUCTS_EXISTS" = "1" ]; then
+  echo "Database already initialized, skipping migrations."
+  exit 0
+fi
+
+echo "Database is empty. Running migrations..."
+
+echo "Running database_setup.sql"
+mysql_cmd "$DB_NAME" < /migrations/01_database_setup.sql
+
+echo "Running database_update.sql"
+mysql_cmd "$DB_NAME" < /migrations/02_database_update.sql
+
+echo "Running database_update_with_temperature.sql"
+mysql_cmd "$DB_NAME" < /migrations/03_database_update_with_temperature.sql
+
+echo "Running database_orders_table.sql"
+mysql_cmd "$DB_NAME" < /migrations/04_database_orders_table.sql
 
 echo "Database migration completed successfully."
