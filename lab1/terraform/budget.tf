@@ -20,4 +20,10 @@ resource "aws_budgets_budget" "monthly" {
     notification_type          = "FORECASTED"
     subscriber_email_addresses = [var.budget_email]
   }
+
+  lifecycle {
+    ignore_changes = [
+      notification
+    ]
+  }
 }

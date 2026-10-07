@@ -13,6 +13,10 @@ resource "aws_ecs_cluster" "app" {
 resource "aws_ecs_task_definition" "app" {
   family = "${var.project_name}-task"
 
+  depends_on = [
+    terraform_data.bootstrap_images
+  ]
+
   requires_compatibilities = [
     "FARGATE"
   ]
@@ -48,9 +52,18 @@ resource "aws_ecs_task_definition" "app" {
       ]
 
       environment = [
-        { name = "PORT", value = "5002" },
-        { name = "DB_HOST", value = aws_db_instance.mysql.address },
-        { name = "DB_NAME", value = "lamp_store" }
+        {
+          name  = "PORT"
+          value = "5002"
+        },
+        {
+          name  = "DB_HOST"
+          value = aws_db_instance.mysql.address
+        },
+        {
+          name  = "DB_NAME"
+          value = "lamp_store"
+        }
       ]
 
       secrets = [
@@ -75,6 +88,12 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   ])
+
+  lifecycle {
+    ignore_changes = [
+      container_definitions
+    ]
+  }
 
   tags = {
     Name = "${var.project_name}-task"
@@ -130,7 +149,7 @@ resource "aws_ecs_service" "app" {
   ]
 
   tags = {
-    Name = "${var.project_name}-service"
+    Name = "${var.project_name}-task-service"
   }
 
   lifecycle {
