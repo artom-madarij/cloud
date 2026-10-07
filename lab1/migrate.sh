@@ -31,6 +31,28 @@ PRODUCTS_EXISTS=$(
 )
 
 if [ "$PRODUCTS_EXISTS" = "1" ]; then
+  echo "Database already initialized."
+
+  echo "Checking product text encoding..."
+
+  mysql_cmd "$DB_NAME" <<'SQL'
+UPDATE products
+SET description =
+  CASE
+    WHEN description REGEXP 'Ð|Ñ|Â|â'
+    THEN CONVERT(
+      CAST(CONVERT(description USING latin1) AS BINARY)
+      USING utf8mb4
+    )
+    ELSE description
+  END;
+
+ALTER TABLE products
+  CONVERT TO CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+SQL
+
+  echo "Product text encoding check completed."
   echo "Database already initialized, skipping migrations."
   exit 0
 fi

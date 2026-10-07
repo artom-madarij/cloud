@@ -1,4 +1,7 @@
-CREATE DATABASE IF NOT EXISTS lamp_store;
+CREATE DATABASE IF NOT EXISTS lamp_store
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
 USE lamp_store;
 
 CREATE TABLE IF NOT EXISTS products (
@@ -15,7 +18,9 @@ CREATE TABLE IF NOT EXISTS products (
   brand VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
 CREATE INDEX idx_type ON products(type);
 CREATE INDEX idx_manufacturer ON products(manufacturer);
