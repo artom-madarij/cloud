@@ -19,7 +19,7 @@
 CLOUD/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml        # CI/CD пайплайн для автоматичного деплою
+│       └── deploy.yml        # CI-CD пайплайн для автоматичного деплою
 ├── lab1/
 │   ├── backend_lab11/        # Node.js Express REST API
 │   ├── lab11/                # React Frontend
