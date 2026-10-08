@@ -28,3 +28,8 @@ CLOUD/
 │   └── Dockerfile            # Multi-stage Dockerfile (ARM64)
 ├── .gitignore
 └── README.md
+
+Виконано додаткові завдання №7 та №8:
+
+* №7 — CloudWatch Monitoring та сповіщення через SNS.
+* №8 — Swagger UI для документації REST API.
