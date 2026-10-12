@@ -26,7 +26,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_demo:/var/lib/mysql
       - ./backend_lab11/database_setup.sql:/docker-entrypoint-initdb.d/01_database_setup.sql:ro
       - ./backend_lab11/database_update.sql:/docker-entrypoint-initdb.d/02_database_update.sql:ro
       - ./backend_lab11/database_update_with_temperature.sql:/docker-entrypoint-initdb.d/03_database_update_with_temperature.sql:ro
@@ -48,4 +48,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  mysql_data_demo:
