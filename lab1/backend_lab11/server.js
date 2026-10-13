@@ -463,7 +463,7 @@ app.delete('/api/cart', async (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ 
-    message: 'Сервер працює', 
+    message: 'Сервер працюєє', 
     timestamp: new Date().toISOString(),
     endpoints: [
       '/api/products',

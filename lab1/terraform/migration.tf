@@ -14,7 +14,7 @@ resource "aws_ecr_repository" "migrations" {
   }
 }
 
-# ECS migration task (запускається один раз з bootstrap.tf)
+# ECS migration task
 
 resource "aws_ecs_task_definition" "migration" {
   family = "${var.project_name}-migration"
