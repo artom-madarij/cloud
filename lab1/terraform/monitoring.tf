@@ -21,11 +21,50 @@ resource "aws_cloudwatch_dashboard" "main" {
         type   = "metric"
         x      = 0
         y      = 0
+        width  = 24
+        height = 6
+
+        properties = {
+          title  = "ECS Tasks: Desired vs Running"
+          region = var.aws_region
+          period = 60
+          stat   = "Average"
+
+          metrics = [
+            [
+              "ECS/ContainerInsights",
+              "DesiredTaskCount",
+              "ClusterName",
+              aws_ecs_cluster.app.name,
+              "ServiceName",
+              aws_ecs_service.app.name,
+              { label = "Desired tasks" }
+            ],
+            [
+              "ECS/ContainerInsights",
+              "RunningTaskCount",
+              "ClusterName",
+              aws_ecs_cluster.app.name,
+              "ServiceName",
+              aws_ecs_service.app.name,
+              { label = "Running tasks" }
+            ]
+          ]
+        }
+      },
+
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
         width  = 12
         height = 6
 
         properties = {
-          title = "ECS CPU Utilization"
+          title  = "ECS CPU Utilization"
+          region = var.aws_region
+          period = 60
+          stat   = "Average"
 
           metrics = [
             [
@@ -37,49 +76,21 @@ resource "aws_cloudwatch_dashboard" "main" {
               aws_ecs_service.app.name
             ]
           ]
-
-          period = 300
-          stat   = "Average"
-          region = var.aws_region
         }
       },
 
       {
         type   = "metric"
         x      = 12
-        y      = 0
-        width  = 12
-        height = 6
-
-        properties = {
-          title = "ECS Memory Utilization"
-
-          metrics = [
-            [
-              "AWS/ECS",
-              "MemoryUtilization",
-              "ClusterName",
-              aws_ecs_cluster.app.name,
-              "ServiceName",
-              aws_ecs_service.app.name
-            ]
-          ]
-
-          period = 300
-          stat   = "Average"
-          region = var.aws_region
-        }
-      },
-
-      {
-        type   = "metric"
-        x      = 0
         y      = 6
         width  = 12
         height = 6
 
         properties = {
-          title = "ALB Request Count"
+          title  = "ALB Requests per Minute"
+          region = var.aws_region
+          period = 60
+          stat   = "Sum"
 
           metrics = [
             [
@@ -89,35 +100,6 @@ resource "aws_cloudwatch_dashboard" "main" {
               aws_lb.app.arn_suffix
             ]
           ]
-
-          period = 300
-          stat   = "Sum"
-          region = var.aws_region
-        }
-      },
-
-      {
-        type   = "metric"
-        x      = 12
-        y      = 6
-        width  = 12
-        height = 6
-
-        properties = {
-          title = "ALB 5xx Errors"
-
-          metrics = [
-            [
-              "AWS/ApplicationELB",
-              "HTTPCode_Target_5XX_Count",
-              "LoadBalancer",
-              aws_lb.app.arn_suffix
-            ]
-          ]
-
-          period = 300
-          stat   = "Sum"
-          region = var.aws_region
         }
       },
 
@@ -129,7 +111,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
 
         properties = {
-          title = "ALB Response Time"
+          title  = "ALB Response Time p95"
+          region = var.aws_region
+          period = 60
+          stat   = "p95"
 
           metrics = [
             [
@@ -139,10 +124,6 @@ resource "aws_cloudwatch_dashboard" "main" {
               aws_lb.app.arn_suffix
             ]
           ]
-
-          period = 300
-          stat   = "Average"
-          region = var.aws_region
         }
       },
 
@@ -154,22 +135,19 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
 
         properties = {
-          title = "Healthy Targets"
+          title  = "ALB HTTP 5xx Errors"
+          region = var.aws_region
+          period = 60
+          stat   = "Sum"
 
           metrics = [
             [
               "AWS/ApplicationELB",
-              "HealthyHostCount",
-              "TargetGroup",
-              aws_lb_target_group.app.arn_suffix,
+              "HTTPCode_Target_5XX_Count",
               "LoadBalancer",
               aws_lb.app.arn_suffix
             ]
           ]
-
-          period = 300
-          stat   = "Average"
-          region = var.aws_region
         }
       }
     ]
@@ -199,6 +177,36 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
   treat_missing_data = "notBreaching"
 
   alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+}
+# Alarm when ECS reaches maximum task count
+
+resource "aws_cloudwatch_metric_alarm" "ecs_max_tasks" {
+  alarm_name        = "${var.project_name}-ecs-max-tasks"
+  alarm_description = "Alarm when ECS reaches maximum capacity of 3 tasks"
+
+  namespace   = "ECS/ContainerInsights"
+  metric_name = "DesiredTaskCount"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+    ServiceName = aws_ecs_service.app.name
+  }
+
+  statistic           = "Maximum"
+  period              = 60
+  evaluation_periods  = 1
+  threshold           = 3
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+
+  treat_missing_data = "notBreaching"
+
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+
+  ok_actions = [
     aws_sns_topic.alerts.arn
   ]
 }

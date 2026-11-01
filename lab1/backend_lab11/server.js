@@ -29,6 +29,13 @@ const dbConfig = {
 
 const pool = mysql.createPool(dbConfig);
 
+const productCache = new Map();
+const PRODUCT_CACHE_TTL = 45 * 1000;
+
+let cacheHits = 0;
+let cacheMisses = 0;
+let cacheBypasses = 0;
+
 const generateOrderNumber = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -143,6 +150,8 @@ app.post('/api/checkout', async (req, res) => {
 
     await connection.commit(); 
 
+    productCache.clear();
+
     console.log(`Замовлення #${orderNumber} успішно створено`);
 
     res.json({
@@ -235,52 +244,97 @@ app.get('/api/orders/:orderNumber', async (req, res) => {
 
 app.get('/api/products', async (req, res) => {
   let connection;
+
+  const cacheKey = req.originalUrl;
+  const bypassCache = req.query.cache === 'off';
+
+  if (bypassCache) {
+    cacheBypasses++;
+    res.set('X-Cache', 'BYPASS');
+  } else {
+    const cached = productCache.get(cacheKey);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      cacheHits++;
+      res.set('X-Cache', 'HIT');
+      return res.json(cached.data);
+    }
+
+    if (cached) {
+      productCache.delete(cacheKey);
+    }
+
+    cacheMisses++;
+  }
+
   try {
     connection = await pool.getConnection();
-    const { search, type, manufacturer, minPrice, maxPrice, sortBy, sortOrder } = req.query;
-    
+
+    const {
+      search,
+      type,
+      manufacturer,
+      minPrice,
+      maxPrice,
+      sortBy,
+      sortOrder
+    } = req.query;
+
     let query = 'SELECT * FROM products WHERE 1=1';
     const params = [];
-    
+
     if (search) {
       query += ' AND (title LIKE ? OR description LIKE ? OR manufacturer LIKE ?)';
       const searchTerm = `%${search}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
-    
+
     if (type) {
       query += ' AND type = ?';
       params.push(type);
     }
-    
+
     if (manufacturer) {
       query += ' AND manufacturer = ?';
       params.push(manufacturer);
     }
-    
+
     if (minPrice) {
       query += ' AND price >= ?';
       params.push(parseFloat(minPrice));
     }
-    
+
     if (maxPrice) {
       query += ' AND price <= ?';
       params.push(parseFloat(maxPrice));
     }
-    
+
     if (sortBy === 'price') {
       const order = sortOrder === 'desc' ? 'DESC' : 'ASC';
       query += ` ORDER BY price ${order}`;
     } else {
       query += ' ORDER BY id ASC';
     }
-    
+
     const [rows] = await connection.execute(query, params);
+
+    if (!bypassCache) {
+      productCache.set(cacheKey, {
+        data: rows,
+        expiresAt: Date.now() + PRODUCT_CACHE_TTL
+      });
+
+      res.set('X-Cache', 'MISS');
+    }
+
     res.json(rows);
-    
+
   } catch (error) {
     console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Помилка сервера', message: error.message });
+    res.status(500).json({
+      error: 'Помилка сервера',
+      message: error.message
+    });
   } finally {
     if (connection) connection.release();
   }
@@ -473,6 +527,21 @@ app.get('/api/health', (req, res) => {
       '/api/orders',
       '/api/orders/:orderNumber'
     ]
+  });
+});
+
+app.get('/api/cache/stats', (req, res) => {
+  const total = cacheHits + cacheMisses;
+
+  res.json({
+    hits: cacheHits,
+    misses: cacheMisses,
+    bypasses: cacheBypasses,
+    hitRate: total
+      ? Number((cacheHits / total * 100).toFixed(2))
+      : 0,
+    entries: productCache.size,
+    ttlSeconds: 45
   });
 });
 

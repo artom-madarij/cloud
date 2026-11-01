@@ -1,35 +1,51 @@
-# Лабораторна робота №1 — AWS Deployment
+# Лабораторні роботи №1 та №2
 
-**Виконав:** студент групи ІР-34, ІКТА — Мадярій Артьом  
-**Застосунок:** Lamp Store REST API  
+**Виконав:** Мадярій Артьом, група ІР-34, ІКТА
+
+**Проєкт:** Lamp Store — інтернет-магазин із REST API.
+
+## Про проєкт
+
+Застосунок складається з React frontend, Node.js REST API
+та бази даних MySQL.
 
 ## Хмарна архітектура
-`Internet` → `Application Load Balancer` → `ECS Fargate` → `Amazon RDS (MySQL)`
 
-## Публічна адреса
-`http://lamp-store-alb-150574506.eu-central-1.elb.amazonaws.com`
+Internet → Application Load Balancer → ECS Fargate → Amazon RDS (MySQL)
 
-## Використані технології
-- **AWS:** ECS Fargate (ARM64), ECR, RDS MySQL, ALB
-- **IaC & CI/CD:** Terraform, GitHub Actions (OIDC)
-- **DevOps:** Docker, Docker Compose
+## Лабораторна робота №2
+
+У другій лабораторній додано:
+
+- Автоматичне масштабування ECS від 1 до 3 екземплярів
+  за середнім завантаженням CPU з цільовим значенням 60%.
+- Навантажувальне тестування за допомогою k6.
+- Панель моніторингу CloudWatch із п'ятьма графіками.
+- Сповіщення на електронну пошту через CloudWatch та SNS.
+- Кешування операцій читання — реалізація в процесі.
 
 ## Структура проєкту
+
 ```text
-CLOUD/
+cloud/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml        # CI-CD пайплайн для автоматичного деплою
+│       └── deploy.yml
+├── docs/
+│   ├── AUTOSCALING.md
+│   ├── ALERTS.md
+│   ├── LOADTEST.md
+│   └── images/
 ├── lab1/
-│   ├── backend_lab11/        # Node.js Express REST API
-│   ├── lab11/                # React Frontend
-│   ├── terraform/            # Terraform конфігурація AWS
-│   ├── compose.yaml          # Локальний Docker Compose setup
-│   └── Dockerfile            # Multi-stage Dockerfile (ARM64)
-├── .gitignore
+│   ├── backend_lab11/
+│   ├── lab11/
+│   ├── terraform/
+│   │   ├── autoscaling.tf
+│   │   └── ...
+│   ├── compose.yaml
+│   ├── Dockerfile
+│   ├── migration.Dockerfile
+│   └── migrate.sh
+├── loadtest/
+│   └── script.js
 └── README.md
-
-Виконано додаткові завдання №7 та №8:
-
-* №7 — CloudWatch Monitoring та сповіщення через SNS.
-* №8 — Swagger UI для документації REST API.

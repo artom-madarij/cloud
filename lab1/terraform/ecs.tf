@@ -3,6 +3,11 @@
 resource "aws_ecs_cluster" "app" {
   name = "${var.project_name}-cluster"
 
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
   tags = {
     Name = "${var.project_name}-cluster"
   }
@@ -154,7 +159,8 @@ resource "aws_ecs_service" "app" {
 
   lifecycle {
     ignore_changes = [
-      task_definition
+      task_definition,
+      desired_count
     ]
   }
 }
