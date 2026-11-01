@@ -35,6 +35,7 @@ cloud/
 │   ├── AUTOSCALING.md
 │   ├── ALERTS.md
 │   ├── LOADTEST.md
+│   ├── CACHE.md
 │   └── images/
 ├── lab1/
 │   ├── backend_lab11/
