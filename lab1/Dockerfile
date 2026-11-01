@@ -32,7 +32,6 @@ COPY backend_lab11/package*.json ./
 RUN npm ci --omit=dev
 
 
-# Production image for the target architecture (ARM64)
 FROM --platform=$TARGETPLATFORM node:22.23.3-alpine3.24 AS production
 
 WORKDIR /app
