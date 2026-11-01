@@ -15,6 +15,11 @@ const CheckoutPage = () => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState('');
 
+  const idempotencyRef = React.useRef({
+    fingerprint: null,
+    key: null
+  });
+
   const formik = useFormik({
     initialValues: {
       firstName: '',
@@ -27,7 +32,7 @@ const CheckoutPage = () => {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       setSubmitError('');
-      
+
       try {
         if (items.length === 0) {
           setSubmitError('Кошик порожній. Додайте товари перед оформленням замовлення.');
@@ -35,17 +40,39 @@ const CheckoutPage = () => {
           return;
         }
 
-        const result = await cartAPI.checkout({
+        const checkoutData = {
           ...values,
-          age: parseInt(values.age)
-        });
+          age: parseInt(values.age, 10)
+        };
+
+        const fingerprint = JSON.stringify(checkoutData);
+
+        if (
+          !idempotencyRef.current.key ||
+          idempotencyRef.current.fingerprint !== fingerprint
+        ) {
+          idempotencyRef.current = {
+            fingerprint,
+            key: window.crypto.randomUUID()
+          };
+        }
+
+        const result = await cartAPI.checkout(
+          checkoutData,
+          idempotencyRef.current.key
+        );
 
         console.log('Замовлення успішно оформлено:', result);
 
+        idempotencyRef.current = {
+          fingerprint: null,
+          key: null
+        };
+
         dispatch(clearCart());
-        
-        navigate('/success', { 
-          state: { 
+
+        navigate('/success', {
+          state: {
             orderNumber: result.orderNumber,
             totalAmount: result.totalAmount,
             orderId: result.orderId
@@ -55,8 +82,8 @@ const CheckoutPage = () => {
       } catch (error) {
         console.error('Помилка при оформленні замовлення:', error);
         setSubmitError(
-          error.response?.data?.error || 
-          error.message || 
+          error.response?.data?.error ||
+          error.message ||
           'Сталася помилка при оформленні замовлення. Спробуйте ще раз.'
         );
       } finally {

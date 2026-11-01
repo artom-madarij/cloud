@@ -12,8 +12,11 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
+      REDIS_URL: redis://redis:6379
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
@@ -31,6 +34,7 @@ services:
       - ./backend_lab11/database_update.sql:/docker-entrypoint-initdb.d/02_database_update.sql:ro
       - ./backend_lab11/database_update_with_temperature.sql:/docker-entrypoint-initdb.d/03_database_update_with_temperature.sql:ro
       - ./backend_lab11/database_orders_table.sql:/docker-entrypoint-initdb.d/04_database_orders_table.sql:ro
+      - ./backend_lab11/05_idempotency_keys.sql:/docker-entrypoint-initdb.d/05_idempotency_keys.sql:ro
     healthcheck:
       test:
         [
@@ -45,6 +49,16 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: lamp-store-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
 
 volumes:

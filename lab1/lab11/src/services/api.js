@@ -111,7 +111,7 @@ export const cartAPI = {
     }
   },
 
-  checkout: async (checkoutData) => {
+  checkout: async (checkoutData, idempotencyKey) => {
     try {
       console.log('Відправка даних оформлення замовлення:', checkoutData);
       
@@ -127,7 +127,11 @@ export const cartAPI = {
         age: parseInt(checkoutData.age, 10)
       };
 
-      const response = await api.post('/checkout', dataToSend);
+      const response = await api.post('/checkout', dataToSend, {
+        headers: {
+          'Idempotency-Key': idempotencyKey
+        }
+      });
       console.log('Відповідь сервера на оформлення:', response.data);
       return response.data;
     } catch (error) {

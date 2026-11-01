@@ -101,22 +101,25 @@ ALTER TABLE products
 SQL
 
   echo "Product text encoding check completed."
-  echo "Database already initialized, skipping migrations."
-  exit 0
+  echo "Database already initialized, skipping legacy migrations."
+
+else
+  echo "Database is empty. Running migrations..."
+
+  echo "Running database_setup.sql"
+  mysql_cmd "$DB_NAME" < /migrations/01_database_setup.sql
+
+  echo "Running database_update.sql"
+  mysql_cmd "$DB_NAME" < /migrations/02_database_update.sql
+
+  echo "Running database_update_with_temperature.sql"
+  mysql_cmd "$DB_NAME" < /migrations/03_database_update_with_temperature.sql
+
+  echo "Running database_orders_table.sql"
+  mysql_cmd "$DB_NAME" < /migrations/04_database_orders_table.sql
 fi
 
-echo "Database is empty. Running migrations..."
-
-echo "Running database_setup.sql"
-mysql_cmd "$DB_NAME" < /migrations/01_database_setup.sql
-
-echo "Running database_update.sql"
-mysql_cmd "$DB_NAME" < /migrations/02_database_update.sql
-
-echo "Running database_update_with_temperature.sql"
-mysql_cmd "$DB_NAME" < /migrations/03_database_update_with_temperature.sql
-
-echo "Running database_orders_table.sql"
-mysql_cmd "$DB_NAME" < /migrations/04_database_orders_table.sql
+echo "Running idempotency_keys.sql"
+mysql_cmd "$DB_NAME" < /migrations/05_idempotency_keys.sql
 
 echo "Database migration completed successfully."
