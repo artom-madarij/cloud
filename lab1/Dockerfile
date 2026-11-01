@@ -1,5 +1,7 @@
+# syntax=docker/dockerfile:1
+
 # Frontend dependencies
-FROM node:22.23.3-alpine3.24 AS frontend-deps
+FROM --platform=$BUILDPLATFORM node:22.23.3-alpine3.24 AS frontend-deps
 
 WORKDIR /app/frontend
 
@@ -8,7 +10,7 @@ RUN npm ci --legacy-peer-deps
 
 
 # Frontend build
-FROM node:22.23.3-alpine3.24 AS frontend-build
+FROM --platform=$BUILDPLATFORM node:22.23.3-alpine3.24 AS frontend-build
 
 WORKDIR /app/frontend
 
@@ -22,7 +24,7 @@ RUN npm run build
 
 
 # Backend dependencies
-FROM node:22.23.3-alpine3.24 AS backend-deps
+FROM --platform=$BUILDPLATFORM node:22.23.3-alpine3.24 AS backend-deps
 
 WORKDIR /app/backend
 
@@ -30,8 +32,8 @@ COPY backend_lab11/package*.json ./
 RUN npm ci --omit=dev
 
 
-# Production
-FROM node:22.23.3-alpine3.24 AS production
+# Production image for the target architecture (ARM64)
+FROM --platform=$TARGETPLATFORM node:22.23.3-alpine3.24 AS production
 
 WORKDIR /app
 
