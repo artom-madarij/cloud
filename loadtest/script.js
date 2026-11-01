@@ -29,11 +29,17 @@ function cachePath(path) {
 }
 
 export const options = {
-  stages: [
-    { duration: '3m', target: VUS },
-    { duration: '5m', target: VUS },
-    { duration: '2m', target: 0 },
-  ],
+  scenarios: {
+    load: {
+      executor: 'ramping-vus',
+      startVUs: 0,
+      stages: [
+        { duration: '3m', target: VUS },
+        { duration: '5m', target: VUS },
+        { duration: '2m', target: 0 },
+      ],
+    },
+  },
   summaryTrendStats: [
     'avg', 'min', 'med', 'max', 'p(50)', 'p(95)', 'p(99)',
   ],
