@@ -6,6 +6,13 @@ resource "aws_appautoscaling_target" "ecs_service" {
   resource_id        = "service/${aws_ecs_cluster.app.name}/${aws_ecs_service.app.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
+
+  lifecycle {
+    ignore_changes = [
+      min_capacity,
+      max_capacity
+    ]
+  }
 }
 
 resource "aws_appautoscaling_policy" "ecs_cpu" {
