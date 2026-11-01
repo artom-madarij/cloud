@@ -81,3 +81,31 @@ resource "aws_security_group" "rds" {
     Name = "${var.project_name}-rds-sg"
   }
 }
+
+# Redis Security Group
+
+resource "aws_security_group" "redis" {
+  name        = "${var.project_name}-redis-sg"
+  description = "Allow Redis access only from ECS application tasks"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Redis from ECS application"
+    protocol        = "tcp"
+    from_port       = 6379
+    to_port         = 6379
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  egress {
+    description = "Allow outbound traffic"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-redis-sg"
+  }
+}

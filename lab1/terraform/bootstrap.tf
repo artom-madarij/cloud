@@ -1,5 +1,7 @@
 locals {
   ecr_registry = split("/", aws_ecr_repository.app.repository_url)[0]
+
+  migration_image_tag = "migration-${substr(filesha256("${path.module}/../migration.Dockerfile"), 0, 8)}-${substr(filesha256("${path.module}/../migrate.sh"), 0, 8)}-${substr(filesha256("${path.module}/../backend_lab11/05_idempotency_keys.sql"), 0, 8)}"
 }
 
 resource "terraform_data" "bootstrap_images" {
@@ -8,7 +10,8 @@ resource "terraform_data" "bootstrap_images" {
     aws_ecr_repository.migrations.id,
     filesha256("${path.module}/../Dockerfile"),
     filesha256("${path.module}/../migration.Dockerfile"),
-    filesha256("${path.module}/../migrate.sh")
+    filesha256("${path.module}/../migrate.sh"),
+    filesha256("${path.module}/../backend_lab11/05_idempotency_keys.sql")
   ]
 
   depends_on = [
@@ -60,7 +63,7 @@ resource "terraform_data" "bootstrap_images" {
 
       if aws ecr describe-images \
         --repository-name "${aws_ecr_repository.migrations.name}" \
-        --image-ids imageTag=migration \
+        --image-ids imageTag="${local.migration_image_tag}" \
         --region "$AWS_REGION" \
         >/dev/null 2>&1
       then
@@ -71,7 +74,7 @@ resource "terraform_data" "bootstrap_images" {
         docker buildx build \
           --platform linux/arm64 \
           --file migration.Dockerfile \
-          --tag "${aws_ecr_repository.migrations.repository_url}:migration" \
+          --tag "${aws_ecr_repository.migrations.repository_url}:${local.migration_image_tag}" \
           --push \
           .
 
@@ -85,7 +88,8 @@ resource "terraform_data" "bootstrap_images" {
 
 resource "terraform_data" "run_migration" {
   triggers_replace = [
-    aws_db_instance.mysql.id
+    aws_db_instance.mysql.id,
+    local.migration_image_tag
   ]
 
   depends_on = [

@@ -38,7 +38,7 @@ resource "aws_ecs_task_definition" "migration" {
   container_definitions = jsonencode([
     {
       name      = "migration"
-      image     = "${aws_ecr_repository.migrations.repository_url}:migration"
+      image     = "${aws_ecr_repository.migrations.repository_url}:${local.migration_image_tag}"
       essential = true
 
       environment = [

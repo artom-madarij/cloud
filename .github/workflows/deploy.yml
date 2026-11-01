@@ -82,16 +82,22 @@ jobs:
 
           NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
             --arg IMAGE "$IMAGE" \
+            --arg REDIS_URL "redis://redis.lamp-store.internal:6379" \
             '.containerDefinitions[0].image = $IMAGE
-             | del(
-                 .taskDefinitionArn,
-                 .revision,
-                 .status,
-                 .requiresAttributes,
-                 .compatibilities,
-                 .registeredAt,
-                 .registeredBy
-               )')
+            | .containerDefinitions[0].environment = (
+                ((.containerDefinitions[0].environment // [])
+                  | map(select(.name != "REDIS_URL")))
+                + [{"name":"REDIS_URL","value":$REDIS_URL}]
+              )
+            | del(
+                .taskDefinitionArn,
+                .revision,
+                .status,
+                .requiresAttributes,
+                .compatibilities,
+                .registeredAt,
+                .registeredBy
+              )')
 
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json "$NEW_TASK_DEF" \
