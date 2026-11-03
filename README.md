@@ -23,6 +23,8 @@ Internet → Application Load Balancer → ECS Fargate → Amazon RDS (MySQL)
 - Панель моніторингу CloudWatch із п'ятьма графіками.
 - Сповіщення на електронну пошту через CloudWatch та SNS.
 - Кешування операцій читання
+- Автоматичне масштабування за розкладом
+- Idempotency 
 
 ## Структура проєкту
 
@@ -36,12 +38,15 @@ cloud/
 │   ├── ALERTS.md
 │   ├── LOADTEST.md
 │   ├── CACHE.md
+│   ├── SCHEDULE.md
+│   ├── IDEMPOTENCY.md
 │   └── images/
 ├── lab1/
 │   ├── backend_lab11/
 │   ├── lab11/
 │   ├── terraform/
 │   │   ├── autoscaling.tf
+│   │   ├── scheduled_scaling.tf
 │   │   └── ...
 │   ├── compose.yaml
 │   ├── Dockerfile
