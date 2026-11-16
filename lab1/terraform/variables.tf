@@ -27,3 +27,15 @@ variable "image_tag" {
   type        = string
   default     = "bootstrap"
 }
+
+variable "ingest_api_key" {
+  description = "API key used by the IoT measurement receiver"
+  type        = string
+  sensitive   = true
+  nullable    = false
+
+  validation {
+    condition     = length(var.ingest_api_key) >= 32
+    error_message = "The ingest API key must contain at least 32 characters."
+  }
+}

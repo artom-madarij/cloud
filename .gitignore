@@ -12,3 +12,14 @@ lab1/terraform/*.tfplan
 lab1/lab11/build/
 .DS_Store
 lab1-backups/
+
+emulator/.env
+emulator/node_modules/
+
+*.tfvars.json
+*.zip
+# Local load-test results
+/loadtest/cache-off.json
+/loadtest/cache-on.json
+/loadtest/summary-alerts.json
+/loadtest/summary.json
