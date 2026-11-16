@@ -72,6 +72,23 @@ docker run --rm --env-file .env iot-emulator
 
 Файл `.env` містить ключ доступу, тому його не потрібно додавати до Git-репозиторію.
 
+## Підготовка Lambda-функцій
+
+Кожна Lambda-функція має власний файл `package.json` та `package-lock.json`, у яких описані необхідні залежності.
+
+Перед розгортанням потрібно встановити залежності для кожної функції. Для цього необхідно виконати команди з кореня репозиторію:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+
+(cd lab1/functions/ingest && npm ci)
+(cd lab1/functions/processor && npm ci)
+(cd lab1/functions/history && npm ci)
+```
+Команда `npm ci` встановлює залежності відповідно до `package-lock.json`.
+
+Terraform використовує `archive_file` для створення ZIP-архівів Lambda-функцій. Тому залежності мають бути встановлені перед розгортанням, щоб вони потрапили до архівів.
+
 ## Структура проєкту
 
 ```text
