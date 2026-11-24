@@ -1,25 +1,13 @@
-lab1/.env
-*.env
-lab1/terraform/terraform.tfvars
-lab1/AWSCLIV2.pkg
+emulator/.env
+terraform/terraform.tfvars
 
-lab1/terraform/.terraform/
-lab1/terraform/*.tfstate
-lab1/terraform/*.tfstate.*
-lab1/terraform/*.tfplan
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfplan
+terraform/.terraform/*.zip
 
 **/node_modules/
-lab1/lab11/build/
-.DS_Store
-lab1-backups/
-
-emulator/.env
-emulator/node_modules/
-
-*.tfvars.json
-*.zip
-# Local load-test results
-/loadtest/cache-off.json
-/loadtest/cache-on.json
-/loadtest/summary-alerts.json
-/loadtest/summary.json
+evidence/*
+!evidence/.gitkeep
+backups/

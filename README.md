@@ -1,144 +1,116 @@
-# Лабораторна робота №3
+# Лабораторна робота №3 — IoT Serverless Pipeline
 
-**Виконав:** Мадярій Артьом, група ІР-34, ІКТА
+**Виконав:** Мадярій Артьом, група ІР-34, ІКТА  
+**Проєкт:** Lamp Store — система збору, обробки та збереження вимірювань трьох IoT-датчиків.
 
-**Проєкт:** Lamp Store — система збору та обробки даних IoT-датчиків.
+## Мета та результат
 
-## Про проєкт
+Емулятор температури, вологості та освітленості надсилає вимірювання через HTTP REST API. Lambda-приймач перевіряє API key та схему повідомлення і додає його до Amazon SQS. Lambda Processor отримує повідомлення з черги, визначає аномалії та ідемпотентно записує вимірювання в Amazon RDS MySQL. Окрема Lambda History повертає історію за датчиком і часовим діапазоном.
 
-У третій лабораторній роботі реалізував систему для збору, обробки та збереження даних від IoT-датчиків за допомогою хмарних сервісів AWS.
+## Архітектура
 
-Для тестування використовую емулятор, який генерує дані трьох типів датчиків: температури, вологості та освітленості.
+```text
+IoT Emulator
+   | POST /measurements + x-api-key
+   v
+Amazon API Gateway -> Lambda Ingest -> Amazon SQS
+                                        |
+                                        v
+                                  Lambda Processor
+                                        |
+                                        v
+                                   Amazon RDS MySQL
 
-Вимірювання надсилаються через REST API, потрапляють у чергу Amazon SQS, після чого обробляються AWS Lambda та зберігаються в базі даних MySQL.
+Client -> API Gateway -> Lambda History -> Amazon RDS MySQL
+```
 
-## Хмарна архітектура
+Приймання, обробка та читання виконуються керованими serverless-сервісами. Звичайним локальним процесом є лише емулятор.
 
-Основний шлях передавання даних:
+## Каталоги
 
-IoT Emulator -> Amazon API Gateway -> AWS Lambda (Ingest) -> Amazon SQS -> AWS Lambda (Processor) -> Amazon RDS (MySQL)
+- `emulator/` — Node.js емулятор, Dockerfile та конфігурація.
+- `functions/ingest/` — HTTP-приймач і публікація в SQS.
+- `functions/processor/` — обробка SQS, перевірка діапазонів, ідемпотентний запис.
+- `functions/history/` — REST API для історії вимірювань.
+- `terraform/` — повністю окрема інфраструктура та локальний Terraform state цієї лабораторної.
+- `docs/` — звіти за обов'язковими завданнями та інструкції.
+- `scripts/` — сценарії розгортання, тестування, запуску та видалення.
+- `evidence/` — локальні результати запуску; не додаються до Git.
 
-Для отримання історії вимірювань використовується окрема Lambda-функція:
+## AWS ресурси
 
-Client -> Amazon API Gateway -> AWS Lambda (History) -> Amazon RDS (MySQL)
+Використовуються API Gateway HTTP API, три AWS Lambda, Amazon SQS, Amazon RDS MySQL, Secrets Manager, окрема VPC, дві приватні підмережі, security groups та один Interface VPC Endpoint для Secrets Manager. NAT Gateway та постійно запущені ECS-контейнери для IoT-конвеєра не створюються.
 
-## Реалізовано
+> RDS і Interface VPC Endpoint можуть мати погодинну вартість. Видаляй стек після демонстрації. `terraform destroy` видаляє RDS без фінального snapshot (`skip_final_snapshot = true`), тому дані бази після видалення не зберігаються.
 
-- Емулятор трьох типів IoT-датчиків із можливістю налаштування інтервалів відправлення.
-- Надсилання вимірювань через REST API.
-- Перевірка ключа доступу та отриманих даних.
-- Передача повідомлень до Amazon SQS.
-- Обробка повідомлень за допомогою AWS Lambda.
-- Перевірка значень та визначення аномальних вимірювань.
-- Захист від повторного запису даних у MySQL.
-- Збереження вимірювань у Amazon RDS.
-- Окремий REST API для отримання історії вимірювань.
+## Передумови
 
-## Публічні адреси API
+- AWS CLI налаштований (`aws sts get-caller-identity` має працювати).
+- Terraform відповідає версії, зазначеній у `terraform/versions.tf`.
+- Node.js 22 або новіший.
+- Docker потрібен лише для запуску емулятора в контейнері.
+- У `emulator/.env` є `API_KEY` довжиною щонайменше 32 символи.
 
-**Приймання вимірювань:**
+## Перший запуск
 
-`POST https://299g4icvm7.execute-api.eu-central-1.amazonaws.com/measurements`
+1. Створи локальний `.env`:
 
-**Отримання історії вимірювань:**
+   ```bash
+   cp emulator/.env.example emulator/.env
+   ```
 
-`GET https://299g4icvm7.execute-api.eu-central-1.amazonaws.com/sensors/{sensor_id}/history`
+2. У `emulator/.env` встанови справжній `API_KEY`. `INGEST_URL` буде оновлено після розгортання.
+3. Запусти:
 
-Для отримання історії можна передати параметри `from`, `to` та `limit`.
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+Скрипт встановить залежності Lambda, ініціалізує Terraform, перевірить конфігурацію, створить окрему інфраструктуру та оновить URL приймача в `.env`. На першому запуску буде запитана адреса для AWS Budget.
 
 ## Запуск емулятора
 
-Емулятор розташований у директорії `lab1/emulator/`.
+```bash
+./scripts/run-emulator.sh
+```
 
-Для запуску необхідно перейти до директорії емулятора та створити файл конфігурації:
+Для зупинки натисни `Ctrl+C`.
+
+## Тестування API
 
 ```bash
-cd lab1/emulator
-
-cp .env.example .env
+./scripts/test-api.sh
 ```
 
-У файлі `.env` потрібно вказати адресу API та ключ доступу.
+Приймання: `POST /measurements`.  
+Історія: `GET /sensors/{sensor_id}/history?from=...&to=...&limit=...`.
 
-Після цього можна зібрати Docker image та запустити контейнер:
+## Видалення інфраструктури
+
+Після завершення демонстрації:
 
 ```bash
-docker build -t iot-emulator .
-
-docker run --rm --env-file .env iot-emulator
+./scripts/destroy.sh
 ```
 
-Під час роботи емулятор генерує та надсилає вимірювання. У консолі відображається кількість успішно надісланих повідомлень та помилок.
-
-Файл `.env` містить ключ доступу, тому його не потрібно додавати до Git-репозиторію.
-
-## Підготовка Lambda-функцій
-
-Кожна Lambda-функція має власний файл `package.json` та `package-lock.json`, у яких описані необхідні залежності.
-
-Перед розгортанням потрібно встановити залежності для кожної функції. Для цього необхідно виконати команди з кореня репозиторію:
-
-```bash
-cd "$(git rev-parse --show-toplevel)"
-
-(cd lab1/functions/ingest && npm ci)
-(cd lab1/functions/processor && npm ci)
-(cd lab1/functions/history && npm ci)
-```
-Команда `npm ci` встановлює залежності відповідно до `package-lock.json`.
-
-Terraform використовує `archive_file` для створення ZIP-архівів Lambda-функцій. Тому залежності мають бути встановлені перед розгортанням, щоб вони потрапили до архівів.
-
-## Структура проєкту
-
-```text
-cloud/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── INGEST.md
-│   ├── PROCESSING.md
-│   └── DATA.md
-├── lab1/
-│   ├── backend_lab11/
-│   ├── lab11/
-│   ├── emulator/
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   └── .env.example
-│   ├── functions/
-│   │   ├── ingest/
-│   │   ├── processor/
-│   │   └── history/
-│   ├── terraform/
-│   │   └── *.tf
-│   ├── compose.yaml
-│   └── Dockerfile
-├── .gitignore
-└── README.md
-```
-
-## Використані технології
-
-- **AWS:** API Gateway, Lambda, SQS, RDS MySQL, Secrets Manager, VPC.
-- **IaC:** Terraform.
-- **Розробка:** Node.js, JavaScript, MySQL.
-- **Контейнеризація:** Docker.
+Скрипт запускає `terraform plan -destroy` та `terraform destroy`. Підтверджуй видалення лише після перевірки плану.
 
 ## Документація
 
-У директорії `docs/` знаходяться додаткові описи реалізації:
+- `docs/ARCHITECTURE.md` — схема та призначення компонентів.
+- `docs/INGEST.md` — схема повідомлення, запит curl та приймання у SQS.
+- `docs/PROCESSING.md` — маршрутизація, аномалії, ідемпотентність та помилки.
+- `docs/DATA.md` — схема таблиці, індекс та API історії.
+- `docs/DEPLOYMENT.md` — повний цикл розгортання.
+- `docs/CLEANUP.md` — видалення та контроль ресурсів.
+- `docs/DEMO.md` — порядок демонстрації на захисті.
 
-- `ARCHITECTURE.md` — загальна архітектура проєкту.
-- `INGEST.md` — приймання вимірювань та робота з SQS.
-- `PROCESSING.md` — обробка даних та захист від дублікатів.
-- `DATA.md` — структура бази даних та отримання історії вимірювань.
+## Бонусні завдання
 
-## Результат
+Завдання 5 (черга недоставлених повідомлень) описане в docs/DLQ.md, завдання 6 (DynamoDB) у docs/NOSQL.md, завдання 7 (S3 і датчик камери) у docs/BLOB.md.
 
-У результаті реалізував систему, яка приймає дані від IoT-датчиків, передає їх через чергу, обробляє за допомогою serverless-функцій та зберігає в реляційній базі даних.
+Публічна адреса приймача: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/measurements
 
-Також реалізував можливість отримання історії вимірювань через окремий REST API.
+Адреса для отримання підписаного URL камери: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/camera/upload-url
+
+Шаблон адреси історії: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/sensors/{sensor_id}/history. Для читання з DynamoDB додається параметр source=dynamodb.
