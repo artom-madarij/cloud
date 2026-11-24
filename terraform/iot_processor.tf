@@ -101,7 +101,9 @@ resource "aws_lambda_function" "iot_processor" {
     aws_iam_role_policy_attachment.iot_processor_vpc,
     aws_iam_role_policy.iot_processor_secrets,
     aws_cloudwatch_log_group.iot_processor,
-    aws_vpc_endpoint.iot_secretsmanager
+    aws_vpc_endpoint.iot_secretsmanager,
+    aws_iam_role_policy.iot_processor_dynamodb,
+    aws_vpc_endpoint.iot_dynamodb
   ]
 
   tags = {
@@ -109,7 +111,7 @@ resource "aws_lambda_function" "iot_processor" {
   }
 }
 
-# SQS trigger - initially disabled until database test succeeds
+# SQS trigger for Processor Lambda
 resource "aws_lambda_event_source_mapping" "iot_processor_sqs" {
   event_source_arn = aws_sqs_queue.iot_measurements.arn
   function_name    = aws_lambda_function.iot_processor.arn
@@ -127,7 +129,8 @@ resource "aws_lambda_event_source_mapping" "iot_processor_sqs" {
     maximum_concurrency = 2
   }
   depends_on = [
-    aws_iam_role_policy.iot_processor_sqs
+    aws_iam_role_policy.iot_processor_sqs,
+    aws_sqs_queue_redrive_policy.iot_measurements
   ]
 }
 

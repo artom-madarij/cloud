@@ -54,8 +54,21 @@ export async function handler(event) {
     const objectKey = `images/${body.sensor_id}/${Date.now()}-${randomUUID()}.${extension}`;
     const uploadUrl = await getSignedUrl(
       s3,
-      new PutObjectCommand({ Bucket: BUCKET, Key: objectKey, ContentType: body.content_type }),
-      { expiresIn: EXPIRES_IN }
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: objectKey,
+        ContentType: body.content_type,
+        ContentLength: body.size,
+        IfNoneMatch: "*"
+      }),
+      {
+        expiresIn: EXPIRES_IN,
+        signableHeaders: new Set([
+          "content-type",
+          "content-length",
+          "if-none-match"
+        ])
+      }
     );
 
     console.log("Presigned upload URL issued:", { sensor_id: body.sensor_id, objectKey });
@@ -63,7 +76,10 @@ export async function handler(event) {
       upload_url: uploadUrl,
       method: "PUT",
       object_key: objectKey,
-      headers: { "Content-Type": body.content_type },
+      headers: {
+        "Content-Type": body.content_type,
+        "If-None-Match": "*"
+      },
       expires_in: EXPIRES_IN
     });
   } catch (error) {

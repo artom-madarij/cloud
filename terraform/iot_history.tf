@@ -115,7 +115,9 @@ resource "aws_lambda_function" "iot_history" {
     aws_iam_role_policy_attachment.iot_history_vpc,
     aws_iam_role_policy.iot_history_secrets,
     aws_cloudwatch_log_group.iot_history,
-    aws_vpc_endpoint.iot_secretsmanager
+    aws_vpc_endpoint.iot_secretsmanager,
+    aws_iam_role_policy.iot_history_bonus,
+    aws_vpc_endpoint.iot_dynamodb
   ]
 
   tags = {

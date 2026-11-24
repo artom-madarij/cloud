@@ -35,6 +35,7 @@ fi
 (cd "$LAB_DIR/functions/ingest" && npm ci)
 (cd "$LAB_DIR/functions/processor" && npm ci)
 (cd "$LAB_DIR/functions/history" && npm ci)
+(cd "$LAB_DIR/functions/upload-url" && npm ci)
 
 terraform -chdir="$TF_DIR" init
 terraform -chdir="$TF_DIR" validate

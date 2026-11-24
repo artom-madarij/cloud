@@ -109,6 +109,7 @@ resource "aws_lambda_function" "iot_upload_url" {
 
   depends_on = [
     aws_iam_role_policy_attachment.iot_upload_url_logs,
+    aws_iam_role_policy.iot_upload_url_s3,
     aws_cloudwatch_log_group.iot_upload_url
   ]
 

@@ -1,6 +1,6 @@
 # IoT Sensor Emulator
 
-Локальний емулятор трьох датчиків: temperature, humidity та light.
+Локальний емулятор датчиків temperature, humidity, light та camera.
 
 ## Налаштування
 

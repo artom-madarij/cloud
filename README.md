@@ -1,11 +1,11 @@
 # Лабораторна робота №3 — IoT Serverless Pipeline
 
 **Виконав:** Мадярій Артьом, група ІР-34, ІКТА  
-**Проєкт:** Lamp Store — система збору, обробки та збереження вимірювань трьох IoT-датчиків.
+**Проєкт:** Lamp Store — система збору, обробки та збереження вимірювань чотирьох IoT-датчиків.
 
 ## Мета та результат
 
-Емулятор температури, вологості та освітленості надсилає вимірювання через HTTP REST API. Lambda-приймач перевіряє API key та схему повідомлення і додає його до Amazon SQS. Lambda Processor отримує повідомлення з черги, визначає аномалії та ідемпотентно записує вимірювання в Amazon RDS MySQL. Окрема Lambda History повертає історію за датчиком і часовим діапазоном.
+Емулятор температури, вологості, освітленості та камери надсилає вимірювання через HTTP REST API. Lambda-приймач перевіряє API key та схему повідомлення і додає його до Amazon SQS. Lambda Processor отримує повідомлення з черги, визначає аномалії та ідемпотентно записує вимірювання в Amazon RDS MySQL. Окрема Lambda History повертає історію за датчиком і часовим діапазоном.
 
 ## Архітектура
 
@@ -25,6 +25,7 @@ Client -> API Gateway -> Lambda History -> Amazon RDS MySQL
 ```
 
 Приймання, обробка та читання виконуються керованими serverless-сервісами. Звичайним локальним процесом є лише емулятор.
+Повна схема з бонусними компонентами (DLQ, DynamoDB, S3 і камера) наведена в `docs/ARCHITECTURE.md`.
 
 ## Каталоги
 
@@ -32,6 +33,7 @@ Client -> API Gateway -> Lambda History -> Amazon RDS MySQL
 - `functions/ingest/` — HTTP-приймач і публікація в SQS.
 - `functions/processor/` — обробка SQS, перевірка діапазонів, ідемпотентний запис.
 - `functions/history/` — REST API для історії вимірювань.
+- `functions/upload-url/` — видача підписаних URL для завантаження зображень камери в S3.
 - `terraform/` — повністю окрема інфраструктура та локальний Terraform state цієї лабораторної.
 - `docs/` — звіти за обов'язковими завданнями та інструкції.
 - `scripts/` — сценарії розгортання, тестування, запуску та видалення.
@@ -39,7 +41,7 @@ Client -> API Gateway -> Lambda History -> Amazon RDS MySQL
 
 ## AWS ресурси
 
-Використовуються API Gateway HTTP API, три AWS Lambda, Amazon SQS, Amazon RDS MySQL, Secrets Manager, окрема VPC, дві приватні підмережі, security groups та один Interface VPC Endpoint для Secrets Manager. NAT Gateway та постійно запущені ECS-контейнери для IoT-конвеєра не створюються.
+Використовуються API Gateway HTTP API, чотири AWS Lambda (Ingest, Processor, History та Upload URL для камери), Amazon SQS з чергою недоставлених повідомлень (DLQ), Amazon RDS MySQL, DynamoDB, приватний S3-бакет, Secrets Manager, окрема VPC, дві приватні підмережі, security groups, один Interface VPC Endpoint для Secrets Manager та один Gateway VPC Endpoint для DynamoDB. NAT Gateway та постійно запущені ECS-контейнери для IoT-конвеєра не створюються.
 
 > RDS і Interface VPC Endpoint можуть мати погодинну вартість. Видаляй стек після демонстрації. `terraform destroy` видаляє RDS без фінального snapshot (`skip_final_snapshot = true`), тому дані бази після видалення не зберігаються.
 

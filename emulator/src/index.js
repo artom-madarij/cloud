@@ -28,7 +28,6 @@ function getInterval(variable, min, max, fallback) {
   return interval;
 }
 
-// ---------- tiny PNG generator (no dependencies) ----------
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256);
   for (let n = 0; n < 256; n++) {
@@ -79,7 +78,6 @@ function makePng(width = 160, height = 120) {
   ]);
 }
 
-// ---------- senders ----------
 async function postJson(url, body) {
   const response = await fetch(url, {
     method: "POST",
@@ -110,18 +108,20 @@ async function sendCamera(sensor) {
   const image = makePng();
   const measuredAt = new Date().toISOString();
 
-  // 1. ask the function for a one-time presigned upload URL
   const presign = await postJson(UPLOAD_URL_ENDPOINT, {
     sensor_id: sensor.sensor_id,
     content_type: "image/png",
     size: image.length
   });
-  const { upload_url: uploadUrl, object_key: objectKey } = await presign.json();
+  const {
+    upload_url: uploadUrl,
+    object_key: objectKey,
+    headers: uploadHeaders
+  } = await presign.json();
 
-  // 2. upload the image directly to S3 (not through the queue)
   const upload = await fetch(uploadUrl, {
     method: "PUT",
-    headers: { "Content-Type": "image/png" },
+    headers: uploadHeaders ?? { "Content-Type": "image/png" },
     body: image,
     signal: AbortSignal.timeout(10000)
   });
@@ -129,7 +129,6 @@ async function sendCamera(sensor) {
     throw new Error(`S3 upload HTTP ${upload.status}: ${await upload.text()}`);
   }
 
-  // 3. only now send a regular message with the object reference
   await postJson(INGEST_URL, {
     sensor_id: sensor.sensor_id,
     sensor_type: sensor.sensor_type,
