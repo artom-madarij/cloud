@@ -111,8 +111,16 @@ Client -> API Gateway -> Lambda History -> Amazon RDS MySQL
 
 Завдання 5 (черга недоставлених повідомлень) описане в docs/DLQ.md, завдання 6 (DynamoDB) у docs/NOSQL.md, завдання 7 (S3 і датчик камери) у docs/BLOB.md.
 
-Публічна адреса приймача: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/measurements
+## Публічні адреси API
 
-Адреса для отримання підписаного URL камери: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/camera/upload-url
+API Gateway створюється Terraform. Після кожного нового розгортання його ID може змінитися, тому актуальні публічні адреси потрібно отримувати з Terraform outputs (не використовувати застарілий URL, скопійований із попереднього розгортання):
 
-Шаблон адреси історії: https://1gkzmt4c8e.execute-api.eu-central-1.amazonaws.com/sensors/{sensor_id}/history. Для читання з DynamoDB додається параметр source=dynamodb.
+```bash
+terraform -chdir=terraform output -raw iot_ingest_url
+terraform -chdir=terraform output -raw iot_upload_url_endpoint
+terraform -chdir=terraform output -raw iot_history_route
+```
+
+Перший output — адреса приймання `POST /measurements`, другий — адреса `POST /camera/upload-url`, третій — шаблон `GET /sensors/{sensor_id}/history`. Для читання історії з DynamoDB додай параметр `source=dynamodb`.
+
+Після успішного запуску `./scripts/deploy.sh` актуальна адреса приймання також автоматично записується в `emulator/.env` як `INGEST_URL`.

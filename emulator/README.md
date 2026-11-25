@@ -4,17 +4,33 @@
 
 ## Налаштування
 
-1. Створи `.env` на основі `.env.example`.
-2. Після `terraform apply` запусти `../scripts/deploy.sh` — він оновить `INGEST_URL`.
-3. Переконайся, що `API_KEY` у `.env` збігається з `ingest_api_key` Terraform (скрипт бере його з `API_KEY`).
+Усі команди нижче виконуй із кореня репозиторію.
+
+1. Створи локальний файл налаштувань:
+
+   ```bash
+   cp emulator/.env.example emulator/.env
+   ```
+
+2. У `emulator/.env` встанови власний `API_KEY` довжиною щонайменше 32 символи.
+3. Розгорни інфраструктуру командою:
+
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+   Скрипт сам виконує `terraform init`, перевірку, `terraform plan` та `terraform apply`, після чого записує актуальний `INGEST_URL` у `emulator/.env`. Окремо запускати `terraform apply` перед ним не потрібно.
+4. Переконайся, що `API_KEY` у `.env` збігається з `ingest_api_key` Terraform. Скрипт автоматично передає його Terraform зі змінної `API_KEY`.
 
 Інтервали кожного датчика задаються через `TEMPERATURE_INTERVAL_MS`, `HUMIDITY_INTERVAL_MS` та `LIGHT_INTERVAL_MS` у межах 20–100 мс.
 
 ## Запуск
 
-З каталогу `lab3/` виконай `./scripts/run-emulator.sh` або з `emulator/` — `npm start`.
+З кореня репозиторію виконай `./scripts/run-emulator.sh` або безпосередньо з каталогу `emulator/` — `npm start`.
 
 ## Docker
+
+Команди виконуй із кореня репозиторію:
 
 ```bash
 docker build -t lab3-iot-emulator ./emulator
