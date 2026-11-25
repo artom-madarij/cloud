@@ -19,3 +19,26 @@
 11. Зупинити емулятор через `Ctrl+C`.
 12. Видалити інфраструктуру командою `./scripts/destroy.sh`.
 13. Переконатися, що ресурси Lab 3 видалені з AWS у регіоні `eu-central-1`.
+
+Результати демонстрації
+
+1. Робота емулятора
+![](images/01-emulator.png)
+
+2. Приймання повідомлень
+![](images/02-ingest.png)
+
+3. Обробка повідомлень
+![git add docs/images/ docs/DEMO.md](images/03-processor.png)
+
+4. Історія вимірювань у MySQL
+![](images/04-history-mysql.png)
+
+5. Сирі дані в DynamoDB
+![](images/05-dynamodb.png)
+
+6. Зображення камери в S3
+![](images/06-camera-s3.png)
+
+7. Черга недоставлених повідомлень
+![](images/07-dlq.png)
