@@ -29,7 +29,7 @@
 ![](images/02-ingest.png)
 
 3. Обробка повідомлень
-![git add docs/images/ docs/DEMO.md](images/03-processor.png)
+![](images/03-processor.png)
 
 4. Історія вимірювань у MySQL
 ![](images/04-history-mysql.png)
